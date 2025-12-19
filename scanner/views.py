@@ -80,3 +80,40 @@ def scan_qr(request):
 def scanner_page(request):
     """Render scanner page."""
     return render(request, "scanner/index.html")
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from .models import Attendee
+
+@require_http_methods(["GET"])
+def stats_view(request):
+    total_registered = Attendee.objects.count()
+    present_count = Attendee.objects.filter(attended=True).count()
+    absent_count = Attendee.objects.filter(attended=False).count()
+    
+    return JsonResponse({
+        'total_registered': total_registered,
+        'present': present_count,
+        'absent': absent_count
+    })
+
+@require_http_methods(["GET"])
+def attendees_view(request):
+    attendees = Attendee.objects.filter(attended=True).order_by('-checked_in_at')  # Most recent first
+    
+    attendees_data = [
+        {
+            'id': attendee.id,
+            'registration_number': attendee.registration_number,
+            'name': attendee.name,
+            'attended': attendee.attended,
+            'checked_in_at': attendee.checked_in_at.isoformat() if attendee.checked_in_at else None
+        }
+        for attendee in attendees
+    ]
+    
+    return JsonResponse({
+        'attendees': attendees_data
+    })
+
+
