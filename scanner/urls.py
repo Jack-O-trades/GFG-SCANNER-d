@@ -1,5 +1,7 @@
 from django.urls import path
 from .views import scan_qr, scanner_page
+from django import views
+from . import views   
 
 urlpatterns = [
     path("", scanner_page),      # opens scanner
