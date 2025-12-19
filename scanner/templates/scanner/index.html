@@ -3,213 +3,1017 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Attendance Scanner</title>
+    <title>QR Attendance Scanner - GeeksforGeeks</title>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background-color: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0a1f15 0%, #0d2818 20%, #1a4d2e 50%, #162925 80%, #0f2f1f 100%);
+            background-attachment: fixed;
             color: white;
-            padding: 1rem;
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: radial-gradient(circle, rgba(29, 209, 161, 0.8), rgba(29, 209, 161, 0.1));
+            border-radius: 50%;
+            animation: float 30s infinite ease-in-out;
+            box-shadow: 0 0 10px rgba(29, 209, 161, 0.4);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+            50% { transform: translateY(-150px) translateX(100px); opacity: 0.8; }
         }
 
         .container {
-            max-width: 720px;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 2;
         }
 
-        h1 { text-align: center; }
+        /* ===== HEADER ===== */
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: rgba(29, 209, 161, 0.15);
+            border: 1px solid rgba(29, 209, 161, 0.3);
+            color: #1dd1a1;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 0.75rem;
+            animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #1dd1a1 0%, #64d9c0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 400;
+            animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+        }
+
+        /* ===== QR SCANNER SECTION ===== */
+        .scanner-section {
+            background: linear-gradient(135deg, rgba(15, 47, 31, 0.5), rgba(26, 77, 46, 0.3));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(29, 209, 161, 0.2);
+            border-radius: 32px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 
+                0 20px 60px rgba(29, 209, 161, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
         #reader {
             width: 100%;
-            border: 4px solid #3b82f6;
-            border-radius: 12px;
-            background: black;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 3px solid rgba(29, 209, 161, 0.4);
+            box-shadow: 
+                0 0 50px rgba(29, 209, 161, 0.3),
+                inset 0 0 0 1px rgba(29, 209, 161, 0.2);
+            position: relative;
+            aspect-ratio: 1;
+            background: rgba(0, 0, 0, 0.5);
         }
 
-        .status {
-            padding: 1rem;
-            border-radius: 8px;
-            font-size: 1.1rem;
+        .scanning-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            border: 2px solid rgba(29, 209, 161, 0.3);
+            border-radius: 24px;
+            box-shadow: 
+                inset 0 0 0 1px rgba(29, 209, 161, 0.5),
+                0 0 30px rgba(29, 209, 161, 0.2);
+        }
+
+        .scanning-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #1dd1a1, transparent);
+            animation: scan 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0%, 100% { transform: translateY(0); opacity: 0; }
+            50% { transform: translateY(calc(100% - 2px)); opacity: 1; }
+        }
+
+        /* ===== STATUS BADGE ===== */
+        .status-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            border-radius: 16px;
             font-weight: 600;
+            font-size: 1rem;
+            backdrop-filter: blur(15px);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-badge.idle {
+            background: linear-gradient(135deg, rgba(29, 209, 161, 0.15), rgba(100, 217, 192, 0.1));
+            color: #1dd1a1;
+            border-color: rgba(29, 209, 161, 0.4);
+        }
+
+        .status-badge.success {
+            background: linear-gradient(135deg, rgba(29, 209, 161, 0.25), rgba(16, 172, 132, 0.15));
+            color: #1dd1a1;
+            border-color: rgba(29, 209, 161, 0.6);
+            box-shadow: 0 0 30px rgba(29, 209, 161, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .status-badge.error {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.2), rgba(244, 67, 54, 0.1));
+            color: #ff7070;
+            border-color: rgba(244, 67, 54, 0.5);
+            box-shadow: 0 0 30px rgba(244, 67, 54, 0.3);
+        }
+
+        .status-badge.warning {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.2), rgba(255, 183, 77, 0.1));
+            color: #ffb74d;
+            border-color: rgba(255, 152, 0, 0.5);
+            box-shadow: 0 0 30px rgba(255, 152, 0, 0.2);
+        }
+
+        .status-badge.loading {
+            background: linear-gradient(135deg, rgba(29, 209, 161, 0.15), rgba(100, 217, 192, 0.1));
+            color: #1dd1a1;
+            border-color: rgba(29, 209, 161, 0.4);
+        }
+
+        .status-icon {
+            font-size: 1.5rem;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.15); opacity: 0.8; }
+        }
+
+        /* ===== DATA CARD ===== */
+        .data-card {
+            background: linear-gradient(135deg, rgba(29, 209, 161, 0.12), rgba(16, 172, 132, 0.08));
+            border: 1.5px solid rgba(29, 209, 161, 0.3);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: none;
+            box-shadow: 0 10px 40px rgba(29, 209, 161, 0.1);
+        }
+
+        .data-card.visible {
+            display: block;
+            animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .data-field {
+            display: grid;
+            gap: 0.4rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .data-field:last-child {
+            margin-bottom: 0;
+        }
+
+        .data-label {
+            font-size: 0.75rem;
+            color: #64d9c0;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        .data-value {
+            font-size: 1.35rem;
+            color: #e0e7ff;
+            font-weight: 700;
+            word-break: break-all;
+            padding: 0.5rem 0;
+        }
+
+        .data-value.loading {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* ===== STATS SECTION ===== */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(15, 47, 31, 0.4), rgba(26, 77, 46, 0.2));
+            backdrop-filter: blur(15px);
+            border: 1.5px solid rgba(29, 209, 161, 0.25);
+            border-radius: 20px;
+            padding: 1.5rem 1rem;
             text-align: center;
-            min-height: 60px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent, rgba(29, 209, 161, 0.1), transparent);
+            pointer-events: none;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(29, 209, 161, 0.5);
+            box-shadow: 0 15px 50px rgba(29, 209, 161, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #1dd1a1;
+            margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .idle { background: #3b82f6; }
-        .success { background: #10b981; color: black; }
-        .error { background: #ef4444; }
-        .warning { background: #f59e0b; color: black; }
-        .loading { background: #6366f1; }
+        .stat-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
 
-        .qr-box {
-            background: #2a2a2a;
-            border: 2px solid #3b82f6;
-            border-radius: 8px;
+        /* ===== ATTENDANCE LIST ===== */
+        .attendance-list-container {
+            background: linear-gradient(135deg, rgba(15, 47, 31, 0.5), rgba(26, 77, 46, 0.3));
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(29, 209, 161, 0.2);
+            border-radius: 28px;
+            padding: 1.8rem;
+            max-height: 450px;
+            overflow-y: auto;
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+            box-shadow: 0 20px 60px rgba(29, 209, 161, 0.1);
+        }
+
+        .attendance-list-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1dd1a1;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.3px;
+        }
+
+        .attendance-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .attendance-item {
+            background: linear-gradient(135deg, rgba(29, 209, 161, 0.08), rgba(16, 172, 132, 0.04));
+            border-left: 4px solid #1dd1a1;
             padding: 1rem;
-            display: grid;
-            gap: 0.5rem;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(29, 209, 161, 0.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .qr-field {
-            display: grid;
-            gap: 0.25rem;
+        .attendance-item:hover {
+            background: linear-gradient(135deg, rgba(29, 209, 161, 0.15), rgba(16, 172, 132, 0.08));
+            border-color: rgba(29, 209, 161, 0.35);
+            transform: translateX(8px);
+            box-shadow: 0 8px 25px rgba(29, 209, 161, 0.15);
         }
 
-        .qr-label {
-            font-size: 0.85rem;
-            color: #9ca3af;
+        .attendance-item-name {
+            color: #e0e7ff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            flex: 1;
+            letter-spacing: -0.2px;
+        }
+
+        .attendance-item-time {
+            color: #64d9c0;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 1rem;
+            background: rgba(29, 209, 161, 0.1);
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+        }
+
+        .attendance-item-badge {
+            background: linear-gradient(135deg, rgba(29, 209, 161, 0.25), rgba(16, 172, 132, 0.15));
+            color: #1dd1a1;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid rgba(29, 209, 161, 0.3);
+            letter-spacing: 0.3px;
+        }
+
+        .empty-list {
+            text-align: center;
+            color: #64d9c0;
+            padding: 3rem 1rem;
+            font-size: 0.95rem;
             font-weight: 500;
         }
 
-        .qr-value {
-            font-size: 1.1rem;
-            color: #3b82f6;
-            font-weight: 600;
-            word-break: break-all;
+        /* ===== SCROLLBAR ===== */
+        .attendance-list-container::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .hidden { display: none; }
+        .attendance-list-container::-webkit-scrollbar-track {
+            background: rgba(29, 209, 161, 0.05);
+            border-radius: 10px;
+        }
 
+        .attendance-list-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(29, 209, 161, 0.4), rgba(29, 209, 161, 0.2));
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .attendance-list-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, rgba(29, 209, 161, 0.6), rgba(29, 209, 161, 0.4));
+        }
+
+        /* ===== INFO TEXT ===== */
         .info-text {
             text-align: center;
-            color: #9ca3af;
-            font-size: 0.9rem;
+            color: #64d9c0;
+            font-size: 0.85rem;
+            margin-top: 1.5rem;
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+            font-weight: 500;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-25px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 640px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                margin-bottom: 2rem;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .scanner-section {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            #reader {
+                border-radius: 20px;
+            }
+
+            .status-badge {
+                padding: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .stats-container {
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .stat-card {
+                padding: 1.25rem 0.75rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .attendance-list-container {
+                padding: 1.5rem;
+                max-height: 350px;
+            }
+
+            .attendance-item {
+                padding: 0.85rem;
+            }
+
+            .attendance-item-name {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0.75rem;
+            }
+
+            .header {
+                margin-bottom: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header p {
+                font-size: 0.8rem;
+            }
+
+            .logo {
+                font-size: 2.2rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .header-badge {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.7rem;
+            }
+
+            .scanner-section {
+                padding: 1.25rem;
+                border-radius: 24px;
+                margin-bottom: 1.25rem;
+            }
+
+            #reader {
+                border-radius: 18px;
+                min-height: 280px;
+            }
+
+            .status-badge {
+                padding: 0.9rem;
+                font-size: 0.85rem;
+                margin-bottom: 1rem;
+            }
+
+            .status-icon {
+                font-size: 1.3rem;
+            }
+
+            .data-card {
+                padding: 1rem;
+                margin-bottom: 1rem;
+                border-radius: 16px;
+            }
+
+            .data-value {
+                font-size: 1.1rem;
+            }
+
+            .stats-container {
+                gap: 0.9rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .stat-card {
+                padding: 1rem 0.6rem;
+                border-radius: 16px;
+            }
+
+            .stat-number {
+                font-size: 1.75rem;
+            }
+
+            .stat-label {
+                font-size: 0.7rem;
+            }
+
+            .attendance-list-container {
+                padding: 1.25rem;
+                max-height: 300px;
+                border-radius: 24px;
+                margin-top: 1rem;
+            }
+
+            .attendance-list-title {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .attendance-item {
+                padding: 0.75rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .attendance-item-name {
+                flex: 1 1 100%;
+                font-size: 0.85rem;
+            }
+
+            .attendance-item-time {
+                font-size: 0.75rem;
+                margin-right: 0;
+            }
+
+            .attendance-item-badge {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.6rem;
+            }
+
+            .info-text {
+                font-size: 0.8rem;
+                margin-top: 1rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .container {
+                padding: 0.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.3rem;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .scanner-section {
+                padding: 1rem;
+            }
+
+            #reader {
+                min-height: 240px;
+            }
+
+            .stat-number {
+                font-size: 1.5rem;
+            }
+
+            .attendance-list-container {
+                max-height: 250px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .scanner-section {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            #reader {
+                max-height: 280px;
+            }
+
+            .header {
+                margin-bottom: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .attendance-list-container {
+                max-height: 200px;
+            }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .stat-card:hover {
+                transform: none;
+            }
+
+            .attendance-item:hover {
+                transform: none;
+            }
+        }
+
+        @media (min-resolution: 200dpi) {
+            .particle {
+                width: 2px;
+                height: 2px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
     </style>
 </head>
 
 <body>
-<div class="container">
-    <h1>📱 GFG Founders Unplugged registration</h1>
+    <!-- Animated Background -->
+    <div class="particles" id="particles"></div>
 
-    <div id="reader"></div>
-
-    <div id="status" class="status idle">Ready to scan</div>
-
-    <div id="qrBox" class="qr-box hidden">
-        <div class="qr-field">
-            <div class="qr-label">Registration Number:</div>
-            <div id="qrReg" class="qr-value">-</div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-badge">🎯 Live Event</div>
+            <div class="logo">🚀</div>
+            <h1>GeeksforGeeks</h1>
+            <p>Attendance Check-in • Founders Unplugged</p>
         </div>
-        <div class="qr-field">
-            <div class="qr-label">Name:</div>
-            <div id="qrName" class="qr-value">-</div>
+
+        <!-- QR Scanner -->
+        <div class="scanner-section">
+            <div id="reader"></div>
+            <div class="scanning-overlay">
+                <div class="scanning-line"></div>
+            </div>
         </div>
+
+        <!-- Status -->
+        <div id="status" class="status-badge idle" role="status" aria-live="polite">
+            <span class="status-icon">✓</span>
+            <span id="statusText">Ready to scan</span>
+        </div>
+
+        <!-- Scanned Data -->
+        <div id="dataCard" class="data-card">
+            <div class="data-field">
+                <div class="data-label">Registration Number</div>
+                <div id="dataReg" class="data-value">-</div>
+            </div>
+            <div class="data-field">
+                <div class="data-label">Name</div>
+                <div id="dataName" class="data-value">-</div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="statTotal">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="statPresent">0</div>
+                <div class="stat-label">Present</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="statAbsent">0</div>
+                <div class="stat-label">Absent</div>
+            </div>
+        </div>
+
+        <!-- Attendance List -->
+        <div class="attendance-list-container" role="region" aria-label="Attendance list">
+            <div class="attendance-list-title">📋 Attendees</div>
+            <ul class="attendance-list" id="attendanceList">
+                <li class="empty-list">No attendees yet</li>
+            </ul>
+        </div>
+
+        <!-- Info -->
+        <p class="info-text">Point your camera at the QR code to check in</p>
     </div>
 
-    <p class="info-text">Point camera at QR code</p>
-</div>
+    <script>
+        let scanner;
+        let processing = false;
+        let attendanceRecords = [];
 
-<script>
-let scanner;
-let processing = false;
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 40; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 30 + 's';
+                particle.style.opacity = Math.random() * 0.6 + 0.2;
+                container.appendChild(particle);
+            }
+        }
 
-async function verifyRegistration(regNo) {
+        async function fetchStatsFromDB() {
     try {
-        // Send as FormData to match Django's request.POST.get()
-        const response = await fetch("/api/scan/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-                registration_number: regNo
-            })
+        const response = await fetch("/api/stats/"); // Your Django endpoint
+        const data = await response.json();
+        
+        document.getElementById('statTotal').textContent = data.total_registered || 0;
+        document.getElementById('statPresent').textContent = data.present || 0;
+        document.getElementById('statAbsent').textContent = data.absent || 0;
+    } catch (error) {
+        console.log("Error fetching stats:", error);
+    }
+}
+
+        function updateAttendanceList() {
+            const listEl = document.getElementById('attendanceList');
+            
+            if (attendanceRecords.length === 0) {
+                listEl.innerHTML = '<li class="empty-list">No attendees yet</li>';
+                return;
+            }
+
+            listEl.innerHTML = '';
+            attendanceRecords.forEach((record, index) => {
+                const time = new Date(record.timestamp).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const li = document.createElement('li');
+                li.className = 'attendance-item';
+                li.innerHTML = `
+                    <span class="attendance-item-name">${index + 1}. ${record.name}</span>
+                    <span class="attendance-item-time">${time}</span>
+                    <span class="attendance-item-badge">✓</span>
+                `;
+                listEl.appendChild(li);
+            });
+        }
+async function fetchAttendeeListFromDB() {
+    try {
+        const response = await fetch("/api/attendees/");
+        console.log("Response status:", response.status);
+        
+        const data = await response.json();
+        console.log("API Response:", data);
+        
+        const listEl = document.getElementById('attendanceList');
+        
+        if (!data.attendees || data.attendees.length === 0) {
+            console.log("No attendees in response");
+            listEl.innerHTML = '<li class="empty-list">No attendees yet</li>';
+            return;
+        }
+
+        console.log("Total attendees:", data.attendees.length);
+        
+        listEl.innerHTML = '';
+        let count = 0;
+        
+        data.attendees.forEach((attendee, index) => {
+            console.log("Attendee:", attendee.name, "Attended:", attendee.attended);
+            
+            if (attendee.attended) {
+                count++;
+                const time = new Date(attendee.checked_in_at).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const li = document.createElement('li');
+                li.className = 'attendance-item';
+                li.innerHTML = `
+                    <span class="attendance-item-name">${count}. ${attendee.name}</span>
+                    <span class="attendance-item-time">${time}</span>
+                    <span class="attendance-item-badge">✓</span>
+                `;
+                listEl.appendChild(li);
+            }
         });
-
-        return await response.json();
+        
+        console.log("Displayed attendees:", count);
+        
     } catch (error) {
-        console.error("Fetch error:", error);
-        return { status: "error", message: "Network error" };
+        console.error("Error fetching attendee list:", error);
     }
 }
 
-async function onScanSuccess(decodedText) {
-    if (processing) return;
-    processing = true;
-
-    const regNo = decodedText.trim();
-    document.getElementById("qrReg").innerText = regNo;
-    document.getElementById("qrName").innerText = "Loading...";
-    document.getElementById("qrBox").classList.remove("hidden");
-
-    // Show loading state
-    setStatus("⏳ Verifying...", "loading");
-
-    try {
-        const data = await verifyRegistration(regNo);
-        console.log("Backend response:", data);
-
-        // Display name and registration
-        if (data.name) {
-            document.getElementById("qrName").innerText = data.name;
-        }
-
-        if (data.status === "success") {
-            setStatus(`✅ ${regNo} - ${data.name} - Marked!`, "success");
-        }
-        else if (data.status === "already_marked") {
-            setStatus(`⚠️ ${regNo} - ${data.name} - Already marked!`, "warning");
-        }
-        else if (data.status === "not_registered") {
-            setStatus("❌ Registration not found", "error");
-        }
-        else if (data.status === "invalid_qr") {
-            setStatus("❌ Invalid QR code", "error");
-        }
-        else {
-            setStatus("❌ Error: " + (data.message || "Unknown error"), "error");
-        }
-
-    } catch (error) {
-        console.error("Error:", error);
-        setStatus("❌ Server error", "error");
-    }
-
-    // Reset after 3 seconds
-    setTimeout(() => {
-        processing = false;
-        setStatus("Ready to scan", "idle");
-        document.getElementById("qrBox").classList.add("hidden");
-        scanner.resume();
-    }, 999);
+function updateAttendanceList() {
+    fetchAttendeeListFromDB();
 }
 
-function setStatus(text, type) {
-    const statusEl = document.getElementById("status");
-    statusEl.textContent = text;
-    statusEl.className = `status ${type}`;
-}
+        async function verifyRegistration(regNo) {
+            try {
+                const response = await fetch("/api/scan/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams({ registration_number: regNo })
+                });
+                return await response.json();
+            } catch (error) {
+                return { status: "error", message: "Network error" };
+            }
+        }
 
-async function initScanner() {
-    try {
-        scanner = new Html5Qrcode("reader");
-        await scanner.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: 250 },
-            onScanSuccess,
-            (error) => console.log("Scan error:", error)
-        );
-        setStatus("Ready to scan", "idle");
-    } catch (error) {
-        console.error("Scanner init error:", error);
-        setStatus("❌ Camera not accessible", "error");
-    }
-}
+        async function onScanSuccess(decodedText) {
+            if (processing) return;
+            processing = true;
 
-window.onload = initScanner;
-</script>
+            const regNo = decodedText.trim();
+            document.getElementById("dataReg").innerText = regNo;
+            document.getElementById("dataName").innerText = "Verifying...";
+            document.getElementById("dataName").classList.add("loading");
+            document.getElementById("dataCard").classList.add("visible");
+
+            setStatus("⏳ Verifying", "loading");
+
+            try {
+                const data = await verifyRegistration(regNo);
+
+                document.getElementById("dataName").classList.remove("loading");
+
+                if (data.name) {
+                    document.getElementById("dataName").innerText = data.name;
+                }
+
+                if (data.status === "success") {
+                    setStatus(`✓ ${data.name} registered!`, "success");
+                    attendanceRecords.push({ regNo, name: data.name, timestamp: new Date() });
+                    fetchAttendeeListFromDB(); // Refresh list from DB
+fetchStatsFromDB(); // Refresh stats from DB
+
+                    fetchStatsFromDB();
+                } else if (data.status === "already_marked") {
+                    setStatus(`⚠ ${data.name} - Already checked in`, "warning");
+                } else if (data.status === "not_registered") {
+                    setStatus("✗ Registration not found", "error");
+                } else {
+                    setStatus("✗ " + (data.message || "Error"), "error");
+                }
+            } catch (error) {
+                setStatus("✗ Server error", "error");
+            }
+
+            setTimeout(() => {
+                processing = false;
+                setStatus("✓ Ready to scan", "idle");
+                document.getElementById("dataCard").classList.remove("visible");
+                scanner.resume();
+            }, 3000);
+        }
+
+        function setStatus(text, type) {
+            const statusEl = document.getElementById("status");
+            const statusText = document.getElementById("statusText");
+            statusText.textContent = text;
+            statusEl.className = `status-badge ${type}`;
+
+            const statusIcon = statusEl.querySelector('.status-icon');
+            const icons = { success: '✓', error: '✗', warning: '⚠', loading: '⏳' };
+            statusIcon.textContent = icons[type] || '✓';
+        }
+
+        async function initScanner() {
+            try {
+                scanner = new Html5Qrcode("reader");
+                await scanner.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: 250 },
+                    onScanSuccess,
+                    (error) => console.log("Scan error:", error)
+                );
+                setStatus("✓ Ready to scan", "idle");
+            } catch (error) {
+                setStatus("✗ Camera not accessible", "error");
+            }
+        }
+
+       window.addEventListener('load', () => {
+    createParticles();
+    initScanner();
+    fetchStatsFromDB(); // Load stats on page load
+    
+    // Auto-refresh stats every 5 seconds
+    setInterval(fetchStatsFromDB, 5000);
+    fetchAttendeeListFromDB(); // Load on startup
+setInterval(fetchAttendeeListFromDB, 5000); // Auto-refresh every 5 seconds
+
+});
+
+    </script>
 
 </body>
 </html>
