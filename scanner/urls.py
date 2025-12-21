@@ -8,4 +8,5 @@ urlpatterns = [
     path("scan/", scan_qr),     # API endpoint
     path('api/stats/', views.stats_view, name='stats'),
     path('api/attendees/', views.attendees_view, name='attendees'), 
+    path("admin/attendees/", views.admin_attendees_view, name="admin_attendees"),
 ]
