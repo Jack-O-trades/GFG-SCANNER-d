@@ -116,4 +116,8 @@ def attendees_view(request):
         'attendees': attendees_data
     })
 
-
+def admin_attendees_view(request):
+    attendees = Attendee.objects.all().order_by('registration_number')
+    return render(request, "scanner/admin_attendees.html", {
+        "attendees": attendees,
+    })
