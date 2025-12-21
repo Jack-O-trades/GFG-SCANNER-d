@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Attendance Admin</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0a1f15 0%, #0d2818 20%, #1a4d2e 50%, #162925 80%, #0f2f1f 100%);
+            background-attachment: fixed;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: radial-gradient(circle, rgba(29, 209, 161, 0.8), rgba(29, 209, 161, 0.1));
+            border-radius: 50%;
+            animation: float 30s infinite ease-in-out;
+            box-shadow: 0 0 10px rgba(29, 209, 161, 0.4);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+            50% { transform: translateY(-150px) translateX(100px); opacity: 0.8; }
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: rgba(29, 209, 161, 0.15);
+            border: 1px solid rgba(29, 209, 161, 0.3);
+            color: #1dd1a1;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #1dd1a1 0%, #64d9c0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        .admin-card {
+            background: linear-gradient(135deg, rgba(15, 47, 31, 0.5), rgba(26, 77, 46, 0.3));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(29, 209, 161, 0.2);
+            border-radius: 28px;
+            padding: 1.8rem;
+            box-shadow:
+                0 20px 60px rgba(29, 209, 161, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .admin-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1dd1a1;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.3px;
+        }
+
+        .admin-title-icon {
+            font-size: 1.4rem;
+        }
+
+        .admin-table-wrapper {
+            max-height: 480px;
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, rgba(29, 209, 161, 0.25), rgba(16, 172, 132, 0.15));
+        }
+
+        thead th {
+            text-align: left;
+            padding: 0.75rem 0.9rem;
+            color: #e0fdf5;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(29, 209, 161, 0.35);
+        }
+
+        tbody tr {
+            background: linear-gradient(135deg, rgba(29, 209, 161, 0.06), rgba(16, 172, 132, 0.03));
+            border-bottom: 1px solid rgba(15, 118, 110, 0.35);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        tbody tr:nth-child(even) {
+            background: linear-gradient(135deg, rgba(15, 47, 31, 0.7), rgba(26, 77, 46, 0.45));
+        }
+
+        tbody tr:hover {
+            transform: translateY(-2px);
+            border-color: rgba(29, 209, 161, 0.6);
+            box-shadow: 0 10px 25px rgba(29, 209, 161, 0.25);
+        }
+
+        td {
+            padding: 0.75rem 0.9rem;
+            font-size: 0.9rem;
+            color: #e2f3ee;
+            white-space: nowrap;
+        }
+
+        td:nth-child(2),
+        td:nth-child(3) {
+            white-space: normal;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            border: 1px solid transparent;
+        }
+
+        .badge-present {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.22), rgba(22, 163, 74, 0.16));
+            color: #bbf7d0;
+            border-color: rgba(34, 197, 94, 0.55);
+        }
+
+        .badge-absent {
+            background: linear-gradient(135deg, rgba(148, 163, 184, 0.22), rgba(100, 116, 139, 0.16));
+            color: #e2e8f0;
+            border-color: rgba(148, 163, 184, 0.55);
+        }
+
+        .empty-row {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: #64d9c0;
+            font-size: 0.95rem;
+        }
+
+        .subtitle {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            text-align: right;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .admin-table-wrapper::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .admin-table-wrapper::-webkit-scrollbar-track {
+            background: rgba(29, 209, 161, 0.05);
+            border-radius: 10px;
+        }
+
+        .admin-table-wrapper::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(29, 209, 161, 0.45), rgba(29, 209, 161, 0.2));
+            border-radius: 10px;
+        }
+
+        @media (max-width: 720px) {
+            .container {
+                padding: 1rem;
+            }
+            .admin-card {
+                padding: 1.25rem;
+            }
+            thead {
+                position: sticky;
+                top: 0;
+                z-index: 3;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+
+<div class="container">
+    <div class="header">
+        <div class="header-badge">🛠 Admin Panel</div>
+        <div class="logo">🚀</div>
+        <h1>GeeksforGeeks</h1>
+        <p>Attendance Dashboard • Founders Unplugged</p>
+    </div>
+
+    <div class="admin-card">
+        <div class="admin-title">
+            <span class="admin-title-icon">📋</span>
+            <span>All Attendees</span>
+        </div>
+
+        <div class="admin-table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Registration No.</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Checked in at</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for attendee in attendees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ attendee.registration_number }}</td>
+                        <td>{{ attendee.name }}</td>
+                        <td>
+                            {% if attendee.attended %}
+                                <span class="badge badge-present">Present</span>
+                            {% else %}
+                                <span class="badge badge-absent">Absent</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if attendee.checked_in_at %}
+                                {{ attendee.checked_in_at }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="empty-row">
+                            No attendees found.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subtitle">
+            Total attendees: {{ attendees|length }}
+        </div>
+    </div>
+</div>
+
+<script>
+    // simple reuse of particle background from scanner
+    function createParticles() {
+        const container = document.getElementById('particles');
+        if (!container) return;
+        for (let i = 0; i < 40; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 30 + 's';
+            particle.style.opacity = Math.random() * 0.6 + 0.2;
+            container.appendChild(particle);
+        }
+    }
+    window.addEventListener('load', createParticles);
+</script>
+</body>
+</html>
