@@ -121,3 +121,24 @@ def admin_attendees_view(request):
     return render(request, "scanner/admin_attendees.html", {
         "attendees": attendees,
     })
+
+import csv
+from django.http import HttpResponse
+from .models import Attendee  # already there
+
+def download_present_csv(request):
+    # Only attendees who were marked present
+    attendees = Attendee.objects.filter(attended=True).order_by("registration_number")  # [file:2]
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="present_attendees.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["registration_number", "name", "checked_in_at"])
+
+    for a in attendees:
+        writer.writerow([a.registration_number, a.name, a.checked_in_at])
+
+    return response
+
+
